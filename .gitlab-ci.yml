@@ -1,0 +1,47 @@
+stages:
+  - test
+  - deploy
+
+variables:
+  PROJECT_DIR: backendsqlite
+  GIT_DEPTH: 0
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - ${PROJECT_DIR}/node_modules/
+
+test_backend:
+  image: node:18
+  stage: test
+  before_script:
+    - cd ${PROJECT_DIR}
+    - npm ci
+  script:
+    - npm test
+
+scalingo:
+  stage: deploy
+  image: ruby:3.1.3
+  tags:
+    - docker
+  variables:
+    SCALINGO_REGION: osc-fr1
+    SCALINGO_APP_NAME: votreAppliScalingo
+  needs:
+    - test_backend
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - curl -O https://cli-dl.scalingo.com/install && bash install
+    - scalingo --app=$SCALINGO_APP_NAME env-set PROJECT_DIR=$PROJECT_DIR
+    - scalingo login --api-token $SCALINGO_API_TOKEN
+    - mkdir -p ~/.dpl
+    - ssh-keygen -t rsa -N "" -C $HOSTNAME -f ~/.dpl/id_rsa
+    - scalingo keys-remove dpl_tmp_key || echo "Cle temporaire inexistante"
+    - scalingo keys-add dpl_tmp_key ~/.dpl/id_rsa.pub
+    - scalingo --app $SCALINGO_APP_NAME git-setup --remote scalingo-dpl --force
+    - >
+      GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -i ~/.dpl/id_rsa'
+      git push scalingo-dpl HEAD:refs/heads/main -f
+    - scalingo keys-remove dpl_tmp_key || echo "Cle temporaire supprimee"
