@@ -44,6 +44,17 @@ async function findUserIdByEmail (token, email) {
   return target.id
 }
 
+async function createGroupHelper (token, overrides = {}) {
+  uniqueCounter += 1
+  const name = overrides.name || `Group_${uniqueCounter}`
+  const response = await request(app)
+    .post('/api/mygroups')
+    .set('x-access-token', token)
+    .send({ name })
+  expect(response.statusCode).toBe(200)
+  return response.body.data.id
+}
+
 describe('Users API (niveaux 4.2 & 4.3)', () => {
   test('Mat_Art can log in and list users with a valid token', async () => {
     const token = await loginAndGetToken()
@@ -145,5 +156,67 @@ describe('Users API (niveaux 4.2 & 4.3)', () => {
     expect(response.statusCode).toBe(200)
     const usersAfter = await listUsers(adminToken)
     expect(usersAfter.find(u => u.email === targetUser.email)).toBeUndefined()
+  })
+})
+
+describe('Groups API (niveau 4.4)', () => {
+  test('owner can create groups and list them', async () => {
+    const ownerToken = await loginAndGetToken()
+    const groupId = await createGroupHelper(ownerToken)
+    const response = await request(app)
+      .get('/api/mygroups')
+      .set('x-access-token', ownerToken)
+    expect(response.statusCode).toBe(200)
+    expect(response.body.data.some(group => group.id === groupId)).toBe(true)
+    const adminToken = await loginAndGetToken(adminUser)
+    const adminResponse = await request(app)
+      .get('/api/mygroups')
+      .set('x-access-token', adminToken)
+    expect(adminResponse.statusCode).toBe(200)
+    expect(adminResponse.body.data.find(group => group.id === groupId)).toBeDefined()
+  })
+
+  test('owner can add a member and members can list their groups', async () => {
+    const ownerToken = await loginAndGetToken()
+    const newUser = await registerUser()
+    const newUserId = await findUserIdByEmail(ownerToken, newUser.email)
+    const groupId = await createGroupHelper(ownerToken)
+    const addResponse = await request(app)
+      .put(`/api/mygroups/${groupId}/${newUserId}`)
+      .set('x-access-token', ownerToken)
+    expect(addResponse.statusCode).toBe(200)
+    const memberToken = await loginAndGetToken({ email: newUser.email, password: newUser.password })
+    const groupsResponse = await request(app)
+      .get('/api/groupsmember')
+      .set('x-access-token', memberToken)
+    expect(groupsResponse.statusCode).toBe(200)
+    expect(groupsResponse.body.data.some(group => group.id === groupId)).toBe(true)
+    const membersList = await request(app)
+      .get(`/api/mygroups/${groupId}`)
+      .set('x-access-token', memberToken)
+    expect(membersList.statusCode).toBe(200)
+    expect(membersList.body.data.some(user => user.email === newUser.email)).toBe(true)
+    const removeResponse = await request(app)
+      .delete(`/api/mygroups/${groupId}/${newUserId}`)
+      .set('x-access-token', memberToken)
+    expect(removeResponse.statusCode).toBe(200)
+    const afterGroups = await request(app)
+      .get('/api/groupsmember')
+      .set('x-access-token', memberToken)
+    expect(afterGroups.body.data.find(group => group.id === groupId)).toBeUndefined()
+  })
+
+  test('admin can delete a group created by another user', async () => {
+    const ownerToken = await loginAndGetToken()
+    const adminToken = await loginAndGetToken(adminUser)
+    const groupId = await createGroupHelper(ownerToken, { name: `Temp_${Date.now()}` })
+    const response = await request(app)
+      .delete(`/api/mygroups/${groupId}`)
+      .set('x-access-token', adminToken)
+    expect(response.statusCode).toBe(200)
+    const ownerGroups = await request(app)
+      .get('/api/mygroups')
+      .set('x-access-token', ownerToken)
+    expect(ownerGroups.body.data.find(group => group.id === groupId)).toBeUndefined()
   })
 })

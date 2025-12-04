@@ -5,4 +5,5 @@ router.use('/', (req, res, next) => {
   next()
 })
 router.use(require('./user'))
+router.use(require('./groups'))
 module.exports = router
