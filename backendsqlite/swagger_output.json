@@ -112,6 +112,9 @@
         ],
         "summary": "Get All users",
         "description": "",
+        "produces": [
+          "application/json"
+        ],
         "parameters": [
           {
             "name": "x-access-token",
@@ -126,7 +129,28 @@
         }
       }
     },
-    "/password": {
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get All users",
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/password": {
       "put": {
         "tags": [
           "Users"
@@ -159,7 +183,7 @@
         }
       }
     },
-    "/users/{id}": {
+    "/api/users/{id}": {
       "put": {
         "tags": [
           "Users"
@@ -237,7 +261,7 @@
         }
       }
     },
-    "/mygroups": {
+    "/api/mygroups": {
       "get": {
         "tags": [
           "Groups"
@@ -289,7 +313,7 @@
         }
       }
     },
-    "/mygroups/{gid}": {
+    "/api/mygroups/{gid}": {
       "get": {
         "tags": [
           "Groups"
@@ -341,7 +365,7 @@
         }
       }
     },
-    "/mygroups/{gid}/{uid}": {
+    "/api/mygroups/{gid}/{uid}": {
       "put": {
         "tags": [
           "Groups"
@@ -405,7 +429,7 @@
         }
       }
     },
-    "/groupsmember": {
+    "/api/groupsmember": {
       "get": {
         "tags": [
           "Groups"
