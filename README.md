@@ -60,3 +60,26 @@ Pour tester manuellement :
    - `PUT /api/mygroups/{gid}/{uid}` ajoute un utilisateur dans le groupe (admin/propriétaire ou l’utilisateur lui‑même).
    - `DELETE /api/mygroups/{gid}/{uid}` retire un membre (admin/propriétaire ou l’utilisateur lui‑même).
    - `GET /api/groupsmember` liste les groupes dont vous êtes membre.
+
+## CI/CD & Déploiement Scalingo (4.5.1)
+
+Le fichier `.gitlab-ci.yml` met en place deux stages :
+
+- `test_backend` (image `node:18`) : `npm ci` puis `npm test` dans `backendsqlite`.
+- `scalingo` (image `ruby:3.1.3`) : installe la CLI Scalingo, s’authentifie et pousse le dépôt sur l’application distante.
+
+### Variables GitLab à définir
+
+Dans **Settings > CI/CD > Variables** :
+
+- `SCALINGO_API_TOKEN` (masked/protected) : token généré sur https://dashboard.scalingo.com (User Settings > API tokens).
+- `SCALINGO_APP_NAME` : nom de votre appli chez Scalingo (ex : `mon-appli-tp`).
+- `SCALINGO_REGION` : `osc-fr1` (ou la région choisie).
+
+Le job `scalingo` s’exécute uniquement sur la branche `main` et suppose un runner tagué `docker`.
+
+### Adaptations éventuelles
+
+- Si l’application backend n’est pas dans `backendsqlite`, mettre à jour `PROJECT_DIR` dans `.gitlab-ci.yml`.
+- Le job `scalingo` crée une clé SSH éphémère (`~/.dpl/id_rsa`). S’il échoue, vérifier que le dépôt Scalingo est bien initialisé (`scalingo git-setup`) et que les variables ci-dessus sont correctes.
+- Pour tester le pipeline localement : `npm test` (pour la partie `test_backend`), puis exécuter manuellement la séquence de la section 4.5.1 sur une machine disposant de la CLI Scalingo.
