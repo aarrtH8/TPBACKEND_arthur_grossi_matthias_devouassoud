@@ -45,6 +45,7 @@ Ce scénario vérifie :
 - changement de mot de passe sur `/api/password`
 - interdiction pour un non-admin de modifier un autre utilisateur
 - opérations admin (`admin@example.com` / `Adm1nP@ss!`) sur `/api/users/:id` PUT/DELETE
+- gestion des groupes (`/api/mygroups`, `/api/groupsmember`, ajout/suppression de membres)
 
 Pour tester manuellement :
 
@@ -52,3 +53,10 @@ Pour tester manuellement :
 2. `POST /login` avec les identifiants ci-dessus pour récupérer un token.
 3. `/api/password` (PUT + nouveau mot de passe) fonctionne avec le token de l’utilisateur connecté.
 4. Pour les routes admin (`/api/users/:id` PUT/DELETE), connectez-vous en tant qu’`admin@example.com`.
+5. Pour la gestion des groupes :
+   - `POST /api/mygroups` avec `{ "name": "Nom du groupe" }` crée un groupe appartenant au créateur.
+   - `GET /api/mygroups` liste les groupes dont vous êtes propriétaire (tous les groupes si vous êtes admin).
+   - `GET /api/mygroups/{gid}` donne les membres du groupe (créateur, membres et admins y ont accès).
+   - `PUT /api/mygroups/{gid}/{uid}` ajoute un utilisateur dans le groupe (admin/propriétaire ou l’utilisateur lui‑même).
+   - `DELETE /api/mygroups/{gid}/{uid}` retire un membre (admin/propriétaire ou l’utilisateur lui‑même).
+   - `GET /api/groupsmember` liste les groupes dont vous êtes membre.
