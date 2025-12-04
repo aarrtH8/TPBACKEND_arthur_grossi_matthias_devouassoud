@@ -30,24 +30,23 @@ module.exports = {
   },
   async newUser (req, res) {
     // #swagger.tags = ['Users']
-    // #swagger.summary = 'New User'
+    // #swagger.summary = 'Register a new user'
     // #swagger.parameters['obj'] = { in: 'body', description:'Name and email', schema: { $name: 'John Doe', $email: 'John.Doe@acme.com', $password: '1m02P@SsF0rt!'}}
     if (!has(req.body, ['name', 'email', 'password'])) throw new CodeError('You must specify the name and email', status.BAD_REQUEST)
     const { name, email, password } = req.body
-    console.log(req.body)
     if (!validPassword(password)) throw new CodeError('Weak password!', status.BAD_REQUEST)
-    await userModel.create({ name, email, passhash: await bcrypt.hash(password, 2) })
+    await userModel.create({ name, email, passhash: await bcrypt.hash(password, 2), isAdmin: false })
     res.json({ status: true, message: 'User Added' })
   },
   async getUsers (req, res) {
-    // TODO : verify if the token is valid...
+    // Access control handled by authenticate middleware
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Get All users'
     const data = await userModel.findAll({ attributes: ['id', 'name', 'email'] })
     res.json({ status: true, message: 'Returning users', data })
   },
   async updateUser (req, res) {
-    // TODO : verify if the token is valid and correspond to an admin
+    // TODO : enforce admin-only access when rights management is implemented
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Mettre à jour les informations de l utilisateur (réservé à un utilisateur administrateur)'
     // #swagger.parameters['obj'] = { in: 'body', schema: { $name: 'John Doe', $email: 'John.Doe@acme.com', $password: '1m02P@SsF0rt!' }}
@@ -66,7 +65,7 @@ module.exports = {
     res.json({ status: true, message: 'User updated' })
   },
   async deleteUser (req, res) {
-    // TODO : verify if the token is valid and correspond to an admin
+    // TODO : enforce admin-only access when rights management is implemented
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Delete User'
     if (!has(req.params, 'id')) throw new CodeError('You must specify the id', status.BAD_REQUEST)

@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const helmet = require('helmet')
 const logger = require('./util/logger')
+const publicRoutes = require('./routes/public.js')
 
 // Instantiate an Express Application
 const app = express()
@@ -27,6 +28,7 @@ const swaggerFile = require('../swagger_output.json')
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // Assign Routes
+app.use('/', publicRoutes)
 app.use('/api', require('./routes/router.js'))
 // Handle errors
 app.use(errorHandler())
