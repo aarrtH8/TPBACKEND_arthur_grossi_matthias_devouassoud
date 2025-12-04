@@ -79,11 +79,11 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "John Doe"
+                  "example": "Mat_Art"
                 },
                 "email": {
                   "type": "string",
-                  "example": "John.Doe@acme.com"
+                  "example": "matt_art@gmail.com"
                 },
                 "password": {
                   "type": "string",

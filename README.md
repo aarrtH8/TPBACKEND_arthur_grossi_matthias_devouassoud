@@ -11,7 +11,7 @@ fetch('http://localhost:3000/login', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    email: 'Sebastien.Viardot@grenoble-inp.fr',
+    email: 'matt_art@gmail.com',
     password: '123456'
   })
 })
@@ -28,4 +28,4 @@ fetch('http://localhost:3000/login', {
   .catch(console.error)
 ```
 
-Le token récupéré devra ensuite être transmis dans l'entête `x-access-token` de vos requêtes vers `/api/users` et les autres endpoints sécurisés.
+Le token récupéré devra ensuite être transmis dans l'entête `x-access-token` de vos requêtes vers `/api/users` et les autres endpoints sécurisés. Gardez-le tant que vous travaillez avec l’utilisateur de démo `Mat_Art`.
