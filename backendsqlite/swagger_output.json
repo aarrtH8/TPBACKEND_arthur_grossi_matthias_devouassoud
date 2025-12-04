@@ -126,6 +126,39 @@
         }
       }
     },
+    "/password": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Change password for authenticated user",
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/users/{id}": {
       "put": {
         "tags": [

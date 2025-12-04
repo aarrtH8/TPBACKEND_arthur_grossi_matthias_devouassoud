@@ -38,6 +38,15 @@ module.exports = {
     await userModel.create({ name, email, passhash: await bcrypt.hash(password, 2), isAdmin: false })
     res.json({ status: true, message: 'User Added' })
   },
+  async updatePassword (req, res) {
+    // #swagger.tags = ['Users']
+    // #swagger.summary = 'Change password for authenticated user'
+    if (!has(req.body, ['password'])) throw new CodeError('You must specify the password', status.BAD_REQUEST)
+    const { password } = req.body
+    if (!validPassword(password)) throw new CodeError('Weak password!', status.BAD_REQUEST)
+    await userModel.update({ passhash: await bcrypt.hash(password, 2) }, { where: { id: req.authUser.id } })
+    res.json({ status: true, message: 'Password updated' })
+  },
   async getUsers (req, res) {
     // Access control handled by authenticate middleware
     // #swagger.tags = ['Users']
@@ -46,14 +55,15 @@ module.exports = {
     res.json({ status: true, message: 'Returning users', data })
   },
   async updateUser (req, res) {
-    // TODO : enforce admin-only access when rights management is implemented
+    // Admin-only route (handled by middleware)
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Mettre à jour les informations de l utilisateur (réservé à un utilisateur administrateur)'
     // #swagger.parameters['obj'] = { in: 'body', schema: { $name: 'John Doe', $email: 'John.Doe@acme.com', $password: '1m02P@SsF0rt!' }}
     const userModified = {}
-    for (const field of ['name', 'email', 'password']) {
+    for (const field of ['name', 'email', 'password', 'isAdmin']) {
       if (has(req.body, field)) {
         if (field === 'password') {
+          if (!validPassword(req.body.password)) throw new CodeError('Weak password!', status.BAD_REQUEST)
           userModified.passhash = await bcrypt.hash(req.body.password, 2)
         } else {
           userModified[field] = req.body[field]
@@ -65,7 +75,7 @@ module.exports = {
     res.json({ status: true, message: 'User updated' })
   },
   async deleteUser (req, res) {
-    // TODO : enforce admin-only access when rights management is implemented
+    // Admin-only route (handled by middleware)
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Delete User'
     if (!has(req.params, 'id')) throw new CodeError('You must specify the id', status.BAD_REQUEST)
