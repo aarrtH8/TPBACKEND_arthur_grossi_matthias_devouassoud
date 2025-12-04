@@ -1,4 +1,5 @@
 stages:
+  - sast
   - test
   - deploy
 
@@ -45,3 +46,13 @@ scalingo:
       GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -i ~/.dpl/id_rsa'
       git push scalingo-dpl HEAD:refs/heads/main -f
     - scalingo keys-remove dpl_tmp_key || echo "Cle temporaire supprimee"
+
+semgrep_sast:
+  image: returntocorp/semgrep:latest
+  stage: sast
+  before_script:
+    - cd ${PROJECT_DIR}
+  script:
+    - semgrep --config auto
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
