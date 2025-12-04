@@ -6,6 +6,8 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const helmet = require('helmet')
+const fs = require('fs')
+const path = require('path')
 const logger = require('./util/logger')
 const publicRoutes = require('./routes/public.js')
 
@@ -24,7 +26,10 @@ app.use(helmet())
 
 // Swagger Documentation
 const swaggerUi = require('swagger-ui-express')
-const swaggerFile = require('../swagger_output.json')
+const swaggerPath = path.join(__dirname, '..', 'swagger_output.json')
+const swaggerFile = fs.existsSync(swaggerPath)
+  ? require('../swagger_output.json')
+  : { swagger: '2.0', info: { title: 'API Backend', version: '1.0.0' }, paths: {} }
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // Assign Routes
