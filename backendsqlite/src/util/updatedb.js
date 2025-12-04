@@ -1,6 +1,7 @@
 const userModel = require('../models/users.js')
 const groupModel = require('../models/groups.js')
 const groupMembersModel = require('../models/groupMembers.js')
+const messagesModel = require('../models/messages.js')
 const bcrypt = require('bcrypt');
 // Ajouter ici les nouveaux require des nouveaux modèles
 
@@ -23,5 +24,6 @@ const bcrypt = require('bcrypt');
   const adminGroup = await groupModel.create({ name: 'Admins', ownerId: adminUser.id })
   await groupMembersModel.create({ groupId: studyGroup.id, userId: defaultUser.id })
   await groupMembersModel.create({ groupId: adminGroup.id, userId: adminUser.id })
+  await messagesModel.create({ groupId: studyGroup.id, userId: defaultUser.id, content: 'Bienvenue dans le groupe !' })
   // Ajouter ici le code permettant d'initialiser par défaut la base de donnée
 })()

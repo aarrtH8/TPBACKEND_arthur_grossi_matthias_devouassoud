@@ -55,6 +55,14 @@ async function createGroupHelper (token, overrides = {}) {
   return response.body.data.id
 }
 
+async function addMemberHelper (token, groupId, userId, expectedStatus = 200) {
+  const response = await request(app)
+    .put(`/api/mygroups/${groupId}/${userId}`)
+    .set('x-access-token', token)
+  expect(response.statusCode).toBe(expectedStatus)
+  return response
+}
+
 describe('Users API (niveaux 4.2 & 4.3)', () => {
   test('Mat_Art can log in and list users with a valid token', async () => {
     const token = await loginAndGetToken()
@@ -218,5 +226,40 @@ describe('Groups API (niveau 4.4)', () => {
       .get('/api/mygroups')
       .set('x-access-token', ownerToken)
     expect(ownerGroups.body.data.find(group => group.id === groupId)).toBeUndefined()
+  })
+
+  test('group members can post and list messages', async () => {
+    const ownerToken = await loginAndGetToken()
+    const member = await registerUser()
+    const memberToken = await loginAndGetToken({ email: member.email, password: member.password })
+    const memberId = await findUserIdByEmail(ownerToken, member.email)
+    const groupId = await createGroupHelper(ownerToken)
+    await addMemberHelper(ownerToken, groupId, memberId)
+    const postResponse = await request(app)
+      .post(`/api/messages/${groupId}`)
+      .set('x-access-token', memberToken)
+      .send({ content: 'Bonjour à tous' })
+    expect(postResponse.statusCode).toBe(200)
+    const listResponse = await request(app)
+      .get(`/api/messages/${groupId}`)
+      .set('x-access-token', memberToken)
+    expect(listResponse.statusCode).toBe(200)
+    expect(listResponse.body.data.some(msg => msg.content === 'Bonjour à tous')).toBe(true)
+  })
+
+  test('non member cannot read or post messages', async () => {
+    const ownerToken = await loginAndGetToken()
+    const outsider = await registerUser({ email: uniqueEmail('outsider') })
+    const outsiderToken = await loginAndGetToken({ email: outsider.email, password: outsider.password })
+    const groupId = await createGroupHelper(ownerToken)
+    const forbiddenList = await request(app)
+      .get(`/api/messages/${groupId}`)
+      .set('x-access-token', outsiderToken)
+    expect(forbiddenList.statusCode).toBe(403)
+    const forbiddenPost = await request(app)
+      .post(`/api/messages/${groupId}`)
+      .set('x-access-token', outsiderToken)
+      .send({ content: 'Je ne devrais pas poster' })
+    expect(forbiddenPost.statusCode).toBe(403)
   })
 })
