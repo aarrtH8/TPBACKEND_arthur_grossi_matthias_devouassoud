@@ -9,7 +9,7 @@ const users = db.define('users', {
   name: {
     type: Sequelize.STRING(128),
     validate: {
-      is: /^[a-z\-'\s]{1,128}$/i
+      is: /^[a-z\-'\s&_]{1,128}$/i
     }
   },
   email: {

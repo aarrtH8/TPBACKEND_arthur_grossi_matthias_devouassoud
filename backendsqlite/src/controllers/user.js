@@ -31,7 +31,7 @@ module.exports = {
   async newUser (req, res) {
     // #swagger.tags = ['Users']
     // #swagger.summary = 'Register a new user'
-    // #swagger.parameters['obj'] = { in: 'body', description:'Name and email', schema: { $name: 'John Doe', $email: 'John.Doe@acme.com', $password: '1m02P@SsF0rt!'}}
+    // #swagger.parameters['obj'] = { in: 'body', description:'Name and email', schema: { $name: 'Mat_Art', $email: 'matt_art@gmail.com', $password: '1m02P@SsF0rt!'}}
     if (!has(req.body, ['name', 'email', 'password'])) throw new CodeError('You must specify the name and email', status.BAD_REQUEST)
     const { name, email, password } = req.body
     if (!validPassword(password)) throw new CodeError('Weak password!', status.BAD_REQUEST)
